@@ -114,7 +114,7 @@ async def on_network_changed(context, is_connected):
     else:
         await app.send_message(chat_id, 'Disconnected from voice chat..')
 
-@app.on_message(filters.chat(Var.CHANNEL) & filters.text)
+@app.on_message(filters.chat(Var.CHANNEL) & filters.command('join', '!'))
 async def join_handler(_, m: Message):
     global group, playing, to_delete
     group = m.chat
