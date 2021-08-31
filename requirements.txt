@@ -2,5 +2,5 @@ ffmpeg-python
 youtube_dl
 pytgcalls==3.0.0.dev9
 git+https://github.com/pyrogram/pyrogram@master
-dotenv-python
+python-dotenv
 tgcrypto
