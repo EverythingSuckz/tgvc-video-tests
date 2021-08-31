@@ -5,7 +5,7 @@ Just for testing video streaming using pytgcalls
 ## Deploy
 
 It's better to figure it by yourself, 
-The command is `python bot.py` btw :)
+The command is `python -m vcbot` btw :)
 
 ## Before running
 
