@@ -25,12 +25,11 @@ async def stream_msg_handler(_, m: Message):
         proc.terminate()
     process = raw_converter(stream_url, file)
     ff_sempai[m.chat.id] = process
-    await asyncio.sleep(4)
-    if not os.path.exists(file):
-        return await m.reply("FFMPEG died!")
+    # if not os.path.exists(file):
+    #     return await m.reply("FFMPEG died!")
     await player.join_vc()
-    await player.group_call.set_video_capture(stream_url)
     player.group_call.input_filename = file
+    await player.group_call.set_video_capture(stream_url)
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('stop', '!'))
 async def stop_stream_msg_handler(_, m: Message):
