@@ -26,11 +26,11 @@ async def join_handler(_, m: Message):
     process = raw_converter(stream_url, file)
     ff_sempai[m.chat.id] = process
     await asyncio.sleep(4)
-    # if not os.path.exists(file):
-    #     return await m.reply("FFMPEG died!")
+    if not os.path.exists(file):
+        return await m.reply("FFMPEG died!")
     await player.join_vc()
+    await player.group_call.set_video_capture(stream_url)
     player.group_call.input_filename = file
-    await player.group_call.set_video_capture(stream_url, fps=30, width=1280, height=720)
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('stop', '!'))
 async def join_handler(_, m: Message):
@@ -39,6 +39,7 @@ async def join_handler(_, m: Message):
     if not ff_sempai.get(m.chat.id) and player.group_call.is_connected:
         proc = ff_sempai[m.chat.id]
         await m.reply(f"FFMPEG process `{proc.pid}` is being terminated")
+        await player.leave_vc()
         proc.terminate()
     else:
         await m.reply("No streams going on vc")
