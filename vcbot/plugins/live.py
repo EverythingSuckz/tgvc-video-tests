@@ -36,10 +36,16 @@ async def stream_msg_handler(_, m: Message):
 async def stop_stream_msg_handler(_, m: Message):
     global ff_sempai
     player = Player(m.chat.id)
-    if ff_sempai.get(m.chat.id) and player.group_call.is_connected:
+    if player.group_call.is_connected:
+        await player.leave_vc()
+    if ff_sempai.get(m.chat.id):
         proc = ff_sempai[m.chat.id]
         await m.reply(f"FFMPEG process `{proc.pid}` is being terminated")
-        await player.leave_vc()
         proc.terminate()
+        if os.path.exists(f"stream{m.chat.id}.raw"):
+            try:
+                os.remove(f"stream{m.chat.id}.raw")
+            except BaseException:
+                ...
     else:
         await m.reply("No streams going on vc")
