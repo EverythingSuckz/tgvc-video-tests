@@ -11,7 +11,7 @@ from vcbot.helpers.utils import raw_converter
 
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('stream', '!'))
-async def join_handler(_, m: Message):
+async def stream_msg_handler(_, m: Message):
     global ff_sempai
     stream_url = "https://feed.play.mv/live/10005200/7EsSDh7aX6/master.m3u8"
     try:
@@ -33,7 +33,7 @@ async def join_handler(_, m: Message):
     player.group_call.input_filename = file
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('stop', '!'))
-async def join_handler(_, m: Message):
+async def stop_stream_msg_handler(_, m: Message):
     global ff_sempai
     player = Player(m.chat.id)
     if ff_sempai.get(m.chat.id) and player.group_call.is_connected:

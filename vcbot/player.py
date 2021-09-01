@@ -97,7 +97,6 @@ class Player:
     async def leave_vc(self):
         global to_delete
         await self.group_call.stop()
-        await self.group_call.leave_current_group_call()
         del instances[self._current_chat]
         try:
             for i in to_delete:
