@@ -36,7 +36,7 @@ async def join_handler(_, m: Message):
 async def join_handler(_, m: Message):
     global ff_sempai
     player = Player(m.chat.id)
-    if not ff_sempai.get(m.chat.id) and player.group_call.is_connected:
+    if ff_sempai.get(m.chat.id) and player.group_call.is_connected:
         proc = ff_sempai[m.chat.id]
         await m.reply(f"FFMPEG process `{proc.pid}` is being terminated")
         await player.leave_vc()
