@@ -16,7 +16,7 @@ The command is `python -m vcbot` btw :)
 
 - install pytgcalls dev version
 
-`pip install -U pytgcalls==3.0.0.dev9`
+`pip install -U pytgcalls==3.0.0.dev10`
 
 
 Made with [pytgcalls](https://github.com/MarshalX/tgcalls) and [pyrogram](https://github.com/pyrogram/pyrogram) ❤️
