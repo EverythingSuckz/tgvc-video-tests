@@ -17,6 +17,8 @@ logging.basicConfig(level=logging.INFO)
 instances = dict()
 queues = Queue()
 to_delete = []
+ff_sempai = dict()
+
 Bot = None
 if Var.BOT_TOKEN:
     Bot = Client(
