@@ -7,7 +7,7 @@ from youtube_dl import YoutubeDL
 from pyrogram.types import Message
 
 def raw_converter(source, output):
-    subprocess.Popen(
+    return subprocess.Popen(
         [
             "ffmpeg",
             "-y",
