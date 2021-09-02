@@ -3,7 +3,7 @@ from pyrogram.types import Message
 from pytgcalls import GroupCallFactory
 from pyrogram.utils import MAX_CHANNEL_ID
 from vcbot import instances, UB, queues, to_delete
-from vcbot.helpers.utils import transcode, tg_download, yt_download
+from vcbot.helpers.utils import raw_converter, transcode, tg_download, yt_download
 
 # base from https://github.com/TeamUltroid/Ultroid/blob/dev/vcbot/__init__.py
 # Thanks to TeamUltroid :)
@@ -73,17 +73,21 @@ class Player:
             width, height = res
         else:
             file = await tg_download(file)
-        audio = await transcode(file)
+        # audio = await transcode(file)
+        audio = file.split('.')[0] + '.raw'
+        
+        # https://t.me/tgcallschat/18596
+        os.mkfifo(file)
+        raw_converter(file, audio)
         to_delete.append(file)
         if not audio:
             return False, "Couldn't fetch audio from file!"
-        await group_call.set_video_capture(file, fps=30, width=width, height=height)
+        await group_call.set_video_capture(file, width=width, height=height)
         group_call.input_filename = audio
         return True, None
 
     async def play_or_queue(self, vid, m: Message, is_path=False):
         anything = queues.get(self._current_chat, False)
-        print('anything: ', anything, self.group_call.is_connected)
         if not anything and not self.group_call.is_connected:
             suc, err = await self.play_file(vid, is_path)
             if not suc:
