@@ -35,7 +35,7 @@ async def join_handler(_, m: Message):
     status = await m.reply("Downloading...")
     await player.join_vc()
     p = await player.play_or_queue(link, m, is_file)
-    await status.edit("Playing" if p else "Queued")
+    await status.edit("Playing.." if p else "Queued")
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('leave', '!'))
 async def join_handler(_, m: Message):
