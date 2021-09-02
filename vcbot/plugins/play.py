@@ -19,8 +19,6 @@ async def join_handler(_, m: Message):
         query = m.text.split(' ', 1)[1]
     except IndexError:
         query = None
-    except AttributeError:
-        query = None
     if query:
         try:
             link = re.search(r'((https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11}))', m.text).group(1)
@@ -35,8 +33,8 @@ async def join_handler(_, m: Message):
         # todo
     status = await m.reply("Downloading...")
     await player.join_vc()
-    await player.play_or_queue(link, m, is_file)
-    await status.edit("Playing")
+    p = await player.play_or_queue(link, m, is_file)
+    await status.edit("Playing" if p else "Queued")
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('leave', '!'))
 async def join_handler(_, m: Message):

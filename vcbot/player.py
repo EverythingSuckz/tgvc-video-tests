@@ -88,11 +88,12 @@ class Player:
             suc, err = await self.play_file(vid, is_path)
             if not suc:
                 await UB.send_message(self._current_chat, str(err))
-                return
+                return True
         else:
             data = [vid, is_path, m.from_user]
             pos = queues.add(self._current_chat, data)
             await m.reply(f"Added to queue #{pos}")
+            return False
             
     async def leave_vc(self):
         global to_delete
