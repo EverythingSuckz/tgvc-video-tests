@@ -22,7 +22,11 @@ async def join_handler(_, m: Message):
     except AttributeError:
         query = None
     if query:
-        link = re.search(r'((https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11}))', m.text).group(1)
+        try:
+            link = re.search(r'((https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11}))', m.text).group(1)
+        except:
+            link = query
+            ...
         is_file = False
     if m.reply_to_message:
         if m.reply_to_message.video:
