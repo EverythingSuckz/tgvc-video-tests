@@ -77,7 +77,10 @@ class Player:
         audio = file.split('.')[0] + '.raw'
         
         # https://t.me/tgcallschat/18596
-        os.mkfifo(file)
+        try:
+            os.mkfifo(audio)
+        except FileExistsError:
+            ... # will not happen btw
         raw_converter(file, audio)
         to_delete.append(file)
         if not audio:

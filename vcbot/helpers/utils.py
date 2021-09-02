@@ -108,8 +108,6 @@ async def yt_download(ytlink):
         return _file, res
 
 async def tg_download(m: Message):
-    if not os.path.isdir("temp"):
-        os.mkdir("temp")
     path = await m.download()
     return path
 
