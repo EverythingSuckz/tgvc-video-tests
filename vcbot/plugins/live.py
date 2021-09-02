@@ -1,5 +1,6 @@
 import re
 import os
+import signal
 import asyncio
 import traceback
 from pytgcalls.implementation import group_call
@@ -31,15 +32,11 @@ async def stream_msg_handler(_, m: Message):
     player = Player(m.chat.id)
     if not ff_sempai.get(m.chat.id) and player.group_call.is_connected:
         status += "\nFound another stream going on this chat..\nTerminated!"
-        if os.path.exists(file):
-            try:
-                os.remove(file)
-            except Exception as err:
-                print(traceback.format_exc())
-                status += f"\nError: {err}"
         proc = ff_sempai[m.chat.id]
         await msg.edit(status)
         proc.terminate()
+    # https://t.me/tgcallschat/18596
+    os.mkfifo(file)
     process = raw_converter(stream_url, file)
     ff_sempai[m.chat.id] = process
     await player.join_vc()
@@ -61,14 +58,9 @@ async def stop_stream_msg_handler(_, m: Message):
     if player.group_call.is_connected:
         await player.leave_vc()
     if ff_sempai.get(m.chat.id):
-        file = f"stream{m.chat.id}.raw"
         proc = ff_sempai[m.chat.id]
         await m.reply(f"FFMPEG process `{proc.pid}` is being terminated")
-        proc.terminate()
-        if os.path.exists(f"stream{m.chat.id}.raw"):
-            try:
-                os.remove(f"stream{m.chat.id}.raw")
-            except BaseException:
-                ...
+        # proc.terminate()
+        proc.send_signal(signal.SIGTERM)
     else:
         await m.reply("No streams going on vc")

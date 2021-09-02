@@ -6,9 +6,8 @@ import asyncio
 from youtube_dl import YoutubeDL
 from pyrogram.types import Message
 
-def raw_converter(source, output):
-    return subprocess.Popen(
-        [
+def raw_converter(source, output, slow=False):
+    cmd = [
             "ffmpeg",
             "-y",
             "-i",
@@ -22,7 +21,26 @@ def raw_converter(source, output):
             "-acodec",
             "pcm_s16le",
             output,
-        ],
+        ] if not slow else [
+            'ffmpeg',
+            '-i',
+            source,
+            '-vn',
+            '-f',
+            's16le',
+            '-ac',
+            '2',
+            '-ar',
+            '48000',
+            '-acodec',
+            'pcm_s16le',
+            '-filter:a',
+            "atempo=0.94",
+            output,
+            '-y'
+        ]
+    return subprocess.Popen(
+        cmd,
         stdin=None,
         stdout=None,
         stderr=None,
