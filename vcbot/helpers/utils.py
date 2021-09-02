@@ -29,6 +29,15 @@ def raw_converter(source, output):
         cwd=None,
     )
 
+async def convert_to_stream(url: str):
+    cmd = ["youtube-dl", "-g", url]
+    proc = await asyncio.create_subprocess_exec(
+        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    )
+    stdout, _ = await proc.communicate()
+    if stdout:
+        return stdout.decode().strip()
+
 async def transcode(file_path: str):
     file_name = file_path.split(".")[0] + ".raw"
     if os.path.isfile(file_name):

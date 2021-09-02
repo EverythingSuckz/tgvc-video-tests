@@ -14,7 +14,7 @@ class Player:
         if instances.get(chat_id):
             self.group_call = instances[chat_id].get('instance')
         else:
-            _client = GroupCallFactory(UB)
+            _client = GroupCallFactory(UB, mtproto_backend=GroupCallFactory.MTPROTO_CLIENT_TYPE.PYROGRAM)
             self.group_call = _client.get_file_group_call()
             instances[chat_id] = {'instance': self.group_call}
 

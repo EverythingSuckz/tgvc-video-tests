@@ -1,12 +1,15 @@
+import re
 import os
 import asyncio
+
+from pytgcalls.implementation import group_call
 from vcbot.config import Var
 from pyrogram import filters
 from vcbot import UB, to_delete, ff_sempai
 from vcbot.player import Player
 from pyrogram.types import Message
 from asyncio import sleep
-from vcbot.helpers.utils import raw_converter
+from vcbot.helpers.utils import convert_to_stream, raw_converter
 
 
 
@@ -16,6 +19,9 @@ async def stream_msg_handler(_, m: Message):
     stream_url = "https://feed.play.mv/live/10005200/7EsSDh7aX6/master.m3u8"
     try:
         stream_url = m.text.split(' ', 1)[1]
+        link = re.search(r'((https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11}))', stream_url).group(1)
+        if link:
+            stream_url = await convert_to_stream(link)
     except IndexError:
         ...
     file = f"stream{m.chat.id}.raw"
@@ -30,6 +36,8 @@ async def stream_msg_handler(_, m: Message):
     await player.join_vc()
     player.group_call.input_filename = file
     await player.group_call.set_video_capture(stream_url)
+
+
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('stop', '!'))
 async def stop_stream_msg_handler(_, m: Message):
