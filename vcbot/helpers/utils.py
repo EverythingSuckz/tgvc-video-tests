@@ -29,7 +29,7 @@ def get_readable_time(seconds: int) -> str:
     return readable_time
 
 def raw_converter(source, output, slow=False, log_file='ffmpeg.log'):
-    log_file = open(log_file, 'w')
+    # log_file = open(log_file, 'w')
     cmd = [
             "ffmpeg",
             "-y",
@@ -64,8 +64,8 @@ def raw_converter(source, output, slow=False, log_file='ffmpeg.log'):
         ]
     return subprocess.Popen(
         cmd,
-        stdin=subprocess.STDOUT,
-        stdout=log_file,
+        stdin=None,
+        stdout=None,
         stderr=None,
         cwd=None,
     )
