@@ -1,17 +1,24 @@
 import re
-
+import time
+from datetime import datetime
+from vcbot.helpers.utils import get_readable_time
 from vcbot.config import Var
 from pyrogram import filters
-from vcbot import UB, to_delete
+from vcbot import UB, to_delete, StartTime
 from vcbot.player import Player
 from pyrogram.types import Message
 
-@UB.on_message(filters.command('alive', '!'))
-async def join_handler(_, m: Message):
-    await m.reply('working')
+@UB.on_message(filters.command('ping', '!'))
+async def ping_msg_handler(_, m: Message):
+    to_be_edited = await m.reply('`Pinging..`')
+    start_ms = datetime.now()
+    uptime = get_readable_time((time.time() - StartTime))
+    end = datetime.now()
+    ms = (end - start_ms).microseconds / 1000
+    await to_be_edited.edit('🏓 Pong\nms: {}\n uptime: {}'.format(ms, uptime))
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('play', '!'))
-async def join_handler(_, m: Message):
+async def play_msg_handler(_, m: Message):
     global to_delete
     chat_id = m.chat.id
     player = Player(chat_id)

@@ -134,3 +134,4 @@ dmypy.json
 *.mp4
 *.raw
 *.m4a
+test.py

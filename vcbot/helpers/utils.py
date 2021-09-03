@@ -6,6 +6,29 @@ import asyncio
 from youtube_dl import YoutubeDL
 from pyrogram.types import Message
 
+def get_readable_time(seconds: int) -> str:
+    count = 0
+    readable_time = ""
+    time_list = []
+    time_suffix_list = ["s", "m", "h", " days"]
+    while count < 4:
+        count += 1
+        if count < 3:
+            remainder, result = divmod(seconds, 60)
+        else:
+            remainder, result = divmod(seconds, 24)
+        if seconds == 0 and remainder == 0:
+            break
+        time_list.append(int(result))
+        seconds = int(remainder)
+    for x in range(len(time_list)):
+        time_list[x] = str(time_list[x]) + time_suffix_list[x]
+    if len(time_list) == 4:
+        readable_time += time_list.pop() + ", "
+    time_list.reverse()
+    readable_time += ": ".join(time_list)
+    return readable_time
+
 def raw_converter(source, output, slow=False):
     cmd = [
             "ffmpeg",
@@ -46,6 +69,16 @@ def raw_converter(source, output, slow=False):
         stderr=None,
         cwd=None,
     )
+
+async def is_ytlive(url):
+    ydl_opts = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]',
+        'outtmpl': '%(title)s - %(extractor)s-%(id)s.%(ext)s',
+        'writethumbnail': False
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        info_dict = ydl.extract_info(url, download=False)
+        return info_dict.get('is_live')
 
 async def convert_to_stream(url: str):
     cmd = ["youtube-dl", "-g", url]
@@ -111,33 +144,33 @@ async def tg_download(m: Message):
     path = await m.download()
     return path
 
-# ignore
-async def _transcode(file_path: str):
-    file_name = file_path.split(".")[0] + ".raw"
-    if os.path.isfile(file_name):
-        return file_name
-    proc = await asyncio.create_subprocess_shell(
-        f"ffmpeg -y -i {file_path} -f s16le -ac 2 -ar 48000 -acodec pcm_s16le {file_name}",
-        asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
-    )
-    await proc.communicate()
-    if proc.returncode != 0:
-        print(f"Transcode failed for {file_path}")
-        return None
-    return file_name
+# # ignore
+# async def _transcode(file_path: str):
+#     file_name = file_path.split(".")[0] + ".raw"
+#     if os.path.isfile(file_name):
+#         return file_name
+#     proc = await asyncio.create_subprocess_shell(
+#         f"ffmpeg -y -i {file_path} -f s16le -ac 2 -ar 48000 -acodec pcm_s16le {file_name}",
+#         asyncio.subprocess.PIPE,
+#         stderr=asyncio.subprocess.PIPE
+#     )
+#     await proc.communicate()
+#     if proc.returncode != 0:
+#         print(f"Transcode failed for {file_path}")
+#         return None
+#     return file_name
 
-# ignore
-async def __transcode(filename: str):
-    file_name = filename.split(".")[0] + ".raw"
-    ffmpeg.input(filename).output(
-        file_name,
-        format="s16le",
-        acodec="pcm_s16le",
-        ac=2,
-        ar="48k",
+# # ignore
+# async def __transcode(filename: str):
+#     file_name = filename.split(".")[0] + ".raw"
+#     ffmpeg.input(filename).output(
+#         file_name,
+#         format="s16le",
+#         acodec="pcm_s16le",
+#         ac=2,
+#         ar="48k",
         
-        loglevel="error",
-    ).overwrite_output().run_async()
-    if os.path.exists(file_name):
-        return file_name
+#         loglevel="error",
+#     ).overwrite_output().run_async()
+#     if os.path.exists(file_name):
+#         return file_name

@@ -10,24 +10,28 @@ from vcbot import UB, to_delete, ff_sempai
 from vcbot.player import Player
 from pyrogram.types import Message
 from asyncio import sleep
-from vcbot.helpers.utils import convert_to_stream, raw_converter
+from vcbot.helpers.utils import convert_to_stream, raw_converter, is_ytlive
 
 
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('stream', '!'))
 async def stream_msg_handler(_, m: Message):
     global ff_sempai
+    status = "Processing.."
+    msg = await m.reply(status)
     stream_url = "https://feed.play.mv/live/10005200/7EsSDh7aX6/master.m3u8"
     try:
         stream_url = m.text.split(' ', 1)[1]
         link = re.search(r'((https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11}))', stream_url)
         if link:
             link = link.group(1)
+            is_live = await is_ytlive(link)
+            if not is_live:
+                status += "\nError: This Youtube url is not a live video"
+                return await msg.edit(status)
             stream_url = await convert_to_stream(link)
     except IndexError:
         ...
-    status = "Processing.."
-    msg = await m.reply(status)
     file = f"stream{m.chat.id}.raw"
     player = Player(m.chat.id)
     if ff_sempai.get(m.chat.id) and player.group_call.is_connected:
