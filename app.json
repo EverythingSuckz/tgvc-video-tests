@@ -1,0 +1,50 @@
+{
+    "name": "TG-VoiceChat-VideoStreamer",
+    "description": "A Pyrogram Telegram bot to stream videos to voice chats..",
+    "keywords": [
+        "telegram",
+        "stream",
+        "video-calls",
+        "pyrogram",
+        "group-calls",
+        "python",
+        "plugin",
+        "modular",
+        "pytgcalls"
+      ],
+    "repository": "https://github.com/EverythingSuckz/tgvc-video-tests",
+    "success_url": "/",
+    "logo": "https://telegra.ph/file/8b9cfbe9aaf44f7ff4468.jpg",
+    "website": "https://github.com/EverythingSuckz/tgvc-video-tests",
+    "env": {
+        "API_ID": {
+            "description": "Get this value from https://my.telegram.org"
+        },
+        "API_HASH": {
+            "description": "Get this value from https://my.telegram.org"
+        },
+        "SUDO": {
+            "description": "User IDs of users who have access to use the bot commands. Separate each with space."
+        },
+        "SESSION": {
+            "description": "Get this value from https://replit.com/@ayrahikari/pyrogram-session-maker"
+        },
+        "BOT_TOKEN": {
+            "description": "Get this value from @BotFather",
+            "required": false
+        }
+    },
+    "buildpacks": [{
+        "url": "heroku/python"
+      },
+      {
+        "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest"
+      }
+    ],
+    "formation": {
+        "worker": {
+            "quantity": 1,
+            "size": "free"
+        }
+    }
+  }
