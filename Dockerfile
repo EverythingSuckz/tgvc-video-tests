@@ -1,11 +1,9 @@
-FROM python:3.9-slim-buster
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
-
+FROM python:latest
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install python3-pip -y
+RUN apt-get install ffmpeg -y
 WORKDIR /app
-
 COPY . /app
-
-CMD [ "bash", "./start.sh" ]
+RUN python3.9 -m pip install --upgrade pip
+RUN python3.9 -m pip install -U -r requirements.txt
+CMD python3.9 -m vcbot
