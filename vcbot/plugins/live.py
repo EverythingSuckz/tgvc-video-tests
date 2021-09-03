@@ -1,15 +1,14 @@
 import re
 import os
-import asyncio
 import signal
+import asyncio
 import traceback
-from pytgcalls.implementation import group_call
+from asyncio import sleep
 from vcbot.config import Var
 from pyrogram import filters
-from vcbot import UB, to_delete, ff_sempai
 from vcbot.player import Player
 from pyrogram.types import Message
-from asyncio import sleep
+from vcbot import UB, to_delete, ff_sempai
 from vcbot.helpers.utils import convert_to_stream, raw_converter, is_ytlive
 
 
@@ -44,7 +43,7 @@ async def stream_msg_handler(_, m: Message):
                 status += f"\nError: {err}"
         proc = ff_sempai[m.chat.id]
         await msg.edit(status)
-        proc.send_signal(signal.SIGTERM)
+        proc.send_signal(signal.SIGQUIT)
     process = raw_converter(stream_url, file)
     ff_sempai[m.chat.id] = process
     await player.join_vc()
@@ -69,10 +68,10 @@ async def stop_stream_msg_handler(_, m: Message):
         file = f"stream{m.chat.id}.raw"
         proc = ff_sempai[m.chat.id]
         await m.reply(f"FFMPEG process `{proc.pid}` is being terminated")
-        proc.send_signal(signal.SIGTERM)
-        if os.path.exists(f"stream{m.chat.id}.raw"):
+        proc.send_signal(signal.SIGQUIT)
+        if os.path.exists(file):
             try:
-                os.remove(f"stream{m.chat.id}.raw")
+                os.remove(file)
             except BaseException:
                 ...
     else:

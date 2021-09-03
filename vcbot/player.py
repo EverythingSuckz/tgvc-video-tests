@@ -95,7 +95,7 @@ class Player:
             suc, err = await self.play_file(vid, is_path)
             if not suc:
                 await UB.send_message(self._current_chat, str(err))
-                return True
+            return True     
         else:
             data = [vid, is_path, m.from_user]
             pos = queues.add(self._current_chat, data)
