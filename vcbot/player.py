@@ -70,7 +70,11 @@ class Player:
         height = None
         if not is_path:
             file, res = await yt_download(file)
-            width, height = res
+            try:
+                width, height = res
+                print(f"{file} is {width}x{height}")
+            except:
+                ...
         else:
             file = await tg_download(file)
         # audio = await transcode(file)

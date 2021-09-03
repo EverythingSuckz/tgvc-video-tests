@@ -1,8 +1,7 @@
-import subprocess
 import os
 import json
-import ffmpeg
 import asyncio
+import subprocess
 from youtube_dl import YoutubeDL
 from pyrogram.types import Message
 
@@ -104,6 +103,26 @@ async def transcode(file_path: str):
         return None
     return file_name
 
+async def get_video_info(filename):
+    proc = await asyncio.create_subprocess_exec('ffprobe', '-hide_banner', '-print_format', 'json', '-show_format', '-show_streams', filename, stdout=asyncio.subprocess.PIPE)
+    stdout, _ = await proc.communicate()
+    return json.loads(stdout)
+
+async def get_backdrop_res(url):
+    info = await get_video_info(url)
+    width = None
+    height = None
+    for each in info['streams']:
+        try:
+            width = int(each['width'])
+            height = int(each['height'])
+            break
+        except (KeyError or AttributeError):
+            continue
+    if height:
+        if not width:
+            width, height = get_resolution({'height': height})
+        return (width, height)
 
 # got this from somewhere
 def get_resolution(info_dict):
@@ -111,21 +130,23 @@ def get_resolution(info_dict):
         width = int(info_dict['width'])
         height = int(info_dict['height'])
     # https://support.google.com/youtube/answer/6375112
-    elif info_dict['height'] == 1080:
+    elif info_dict.get("height") == 1080:
         width = 1920
         height = 1080
-    elif info_dict['height'] == 720:
+    elif info_dict.get("height") == 720:
         width = 1280
         height = 720
-    elif info_dict['height'] == 480:
+    elif info_dict.get("height") == 480:
         width = 854
         height = 480
-    elif info_dict['height'] == 360:
+    elif info_dict.get("height") == 360:
         width = 640
         height = 360
-    elif info_dict['height'] == 240:
+    elif info_dict.get("height") == 240:
         width = 426
         height = 240
+    else:
+        return None
     return (width, height)
 
 async def yt_download(ytlink):
@@ -137,6 +158,8 @@ async def yt_download(ytlink):
     with YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(ytlink, download=False)
         res = get_resolution(info_dict)
+        if not res:
+            res = await get_backdrop_res(ytlink)
         ydl.process_info(info_dict)
         _file = ydl.prepare_filename(info_dict)
         return _file, res
