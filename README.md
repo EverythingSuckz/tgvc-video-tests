@@ -51,7 +51,7 @@ Asked one of the devs and he told me:
 
 Still wanna get banned? here
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https%3A%2F%2Fgithub.com%2FEverythingSuckz%2Ftgvc-video-tests&envs=API_ID%2CAPI_HASH%2CSESSION%2CSUDO%2CBOT_TOKEN&optionalEnvs=BOT_TOKEN&API_IDDesc=Get+this+value+from+https%3A%2F%2Fmy.telegram.org%2Fapps&API_HASHDesc=Get+this+value+from+my.telegram.org%2Fapps&SESSIONDesc=get+it+from+https%3A%2F%2Freplit.com%2F%40ayrahikari%2Fpyrogram-session-maker&SUDODesc=The+user+IDs+of+users+who+have+access+to+bot+commands&BOT_TOKENDesc=Get+this+from+%40BotFather&SUDODefault=919209968&referralCode=WRENCH)   
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https%3A%2F%2Fgithub.com%2FEverythingSuckz%2Ftgvc-video-tests%2Ftree%2Fbeta&envs=API_ID%2CAPI_HASH%2CSESSION%2CSUDO%2CBOT_TOKEN&optionalEnvs=BOT_TOKEN&API_IDDesc=Get+this+value+from+https%3A%2F%2Fmy.telegram.org%2Fapps&API_HASHDesc=Get+this+value+from+my.telegram.org%2Fapps&SESSIONDesc=get+it+from+https%3A%2F%2Freplit.com%2F%40ayrahikari%2Fpyrogram-session-maker&SUDODesc=The+user+IDs+of+users+who+have+access+to+bot+commands&BOT_TOKENDesc=Get+this+from+%40BotFather&SUDODefault=919209968&referralCode=WRENCH)   
 </details>  
 
 ## Known Issues
