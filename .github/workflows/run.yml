@@ -3,7 +3,7 @@ on:
     schedule:
       - cron: "0 */6 * * *"
     push:
-      branches: [ main ]
+      branches: [ beta ]
     workflow_dispatch:
     
 env:
@@ -33,7 +33,6 @@ jobs:
          continue-on-error: true
          run: |
            sudo apt -qq update && sudo apt -qq install -y --no-install-recommends ffmpeg neofetch
-           git checkout --track origin/beta
            pip3 install -r requirements.txt
           #  echo "API_ID=${{ secrets.API_ID }} | tee .env
           #  echo "API_HASH=${{ secrets.API_HASH }} | tee -a .env
