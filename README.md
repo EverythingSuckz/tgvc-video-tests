@@ -56,11 +56,11 @@ Still wanna get banned? here
 
 ## Known Issues
 
-- Video and audio sync issues.
+- ~~Video and audio sync issues.~~ (not anymore)
 - Some stream links may not be streamed.
 - Less audio quality.
-- breaks / lags in video.
-- In workflows, the `!stop` commands usually kills the whole bot.
+- breaks / lags in video when you play live videos
+- ~~In workflows, the `!stop` commands usually kills the whole bot.~~
 
 ## FaQ
 
@@ -71,15 +71,5 @@ Still wanna get banned? here
 
 </details>  
 
-<details>
-    <summary>  My bot died when I used !stop, any way to restart the workflow?</summary>
 
-**Fortunately, There is**
-
-* Goto the `actions` tab in your forked repository.
-* Switch to `Run on workflows` tab.
-* Press the `Run workflow` button.
-
-</details>  
-
-Made with [pytgcalls](https://github.com/MarshalX/tgcalls) and [pyrogram](https://github.com/pyrogram/pyrogram) ❤️
+Made with [Py-TgCalls](https://github.com/pytgcalls/pytgcalls) and [pyrogram](https://github.com/pyrogram/pyrogram) ❤️

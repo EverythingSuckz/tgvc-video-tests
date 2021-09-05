@@ -29,9 +29,11 @@ jobs:
          with:
            python-version: 3.9
        - name: cloning repo and install
+
          continue-on-error: true
          run: |
            sudo apt -qq update && sudo apt -qq install -y --no-install-recommends ffmpeg neofetch
+           git checkout --track origin/beta
            pip3 install -r requirements.txt
           #  echo "API_ID=${{ secrets.API_ID }} | tee .env
           #  echo "API_HASH=${{ secrets.API_HASH }} | tee -a .env

@@ -3,8 +3,8 @@ import glob
 import asyncio
 import importlib
 from pathlib import Path
-from pyrogram import idle
-from vcbot import Bot, UB
+from pytgcalls import idle
+from vcbot import Bot, UB, group_calls
 from vcbot.config import Var
 from vcbot.plugins import play
 loop = asyncio.get_event_loop()
@@ -28,6 +28,7 @@ async def client_start(bot=False):
     if bot:
         await Bot.start()
     await UB.start()
+    await group_calls.start()
     print('----------------------- DONE ------------------------')
     print('--------------------- Importing ---------------------')
     for name in files:

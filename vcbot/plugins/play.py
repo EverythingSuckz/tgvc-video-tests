@@ -5,7 +5,7 @@ from pyrogram import filters
 from datetime import datetime
 from vcbot.player import Player
 from pyrogram.types import Message
-from vcbot import UB, to_delete, StartTime
+from vcbot import UB, to_delete, StartTime, group_calls
 from vcbot.helpers.utils import get_readable_time, is_ytlive
 
 @UB.on_message(filters.command('ping', '!'))
@@ -15,11 +15,12 @@ async def ping_msg_handler(_, m: Message):
     uptime = get_readable_time((time.time() - StartTime))
     end = datetime.now()
     ms = (end - start_ms).microseconds / 1000
-    await to_be_edited.edit('🏓 **Pong**\n`⟶` MS: {}\n`⟶` Uptime: {}'.format(ms, uptime))
+    calls_ping = await group_calls.ping
+    print(group_calls.ping)
+    await to_be_edited.edit('🏓 **Pong**\n`⟶` MS: {}\n`⟶` PyTgCalls ping: {}\n`⟶` Uptime: {}'.format(ms, calls_ping, uptime))
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('play', '!'))
 async def play_msg_handler(_, m: Message):
-    global to_delete
     chat_id = m.chat.id
     player = Player(chat_id)
     is_file = False
@@ -44,7 +45,6 @@ async def play_msg_handler(_, m: Message):
     if is_live:
         return await m.reply("Error: This is a live link.\nTip: use !stream command.")
     status = await m.reply("Downloading...")
-    await player.join_vc()
     p = await player.play_or_queue(link, m, is_file)
     await status.edit("Playing.." if p else "Queued")
 

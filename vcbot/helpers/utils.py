@@ -28,40 +28,9 @@ def get_readable_time(seconds: int) -> str:
     readable_time += ": ".join(time_list)
     return readable_time
 
-def raw_converter(source, output, slow=False, log_file='ffmpeg.log'):
+def raw_converter(source, vid, audio, log_file='ffmpeg.log'):
     # log_file = open(log_file, 'w')
-    cmd = [
-            "ffmpeg",
-            "-y",
-            "-i",
-            source,
-            "-f",
-            "s16le",
-            "-ac",
-            "2",
-            "-ar",
-            "48000",
-            "-acodec",
-            "pcm_s16le",
-            output,
-        ] if not slow else [
-            'ffmpeg',
-            '-i',
-            source,
-            '-vn',
-            '-f',
-            's16le',
-            '-ac',
-            '2',
-            '-ar',
-            '48000',
-            '-acodec',
-            'pcm_s16le',
-            '-filter:a',
-            "atempo=0.94",
-            output,
-            '-y'
-        ]
+    cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", source, "-f", "s16le", "-ac", "1", "-ar", "48000", audio, "-f", "rawvideo", '-r', '25', '-pix_fmt', 'yuv420p', '-vf', 'scale=640:-1', vid]
     return subprocess.Popen(
         cmd,
         stdin=None,
@@ -89,11 +58,12 @@ async def convert_to_stream(url: str):
     if stdout:
         return stdout.decode().strip()
 
-async def transcode(file_path: str):
-    file_name = file_path.split(".")[0] + ".raw"
-    if os.path.isfile(file_name):
-        return file_name
-    cmd = ["ffmpeg", "-y", "-i", file_path, "-f", "s16le", "-ac", "2", '-vn', "-ar", "48000", "-acodec", "pcm_s16le", file_name]
+async def transcode(file_path: str, delete=True):
+    audio_f = file_path.split(".")[0] + 'audio' + ".raw"
+    video_f = file_path.split(".")[0] + 'video' + ".raw"
+    if (os.path.isfile(audio_f) and (os.path.isfile(video_f))):
+        return audio_f, video_f
+    cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", file_path, "-f", "s16le", "-ac", "1", "-ar", "48000", audio_f, "-f", "rawvideo", '-r', '25', '-pix_fmt', 'yuv420p', '-vf', 'scale=640:-1', video_f]
     proc = await asyncio.create_subprocess_exec(
         *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
@@ -101,7 +71,12 @@ async def transcode(file_path: str):
     if proc.returncode != 0:
         print(f"Transcode failed for {file_path}")
         return None
-    return file_name
+    if delete:
+        try:
+            os.remove(file_path)
+        except BaseException:
+            ...
+    return audio_f, video_f
 
 async def get_video_info(filename):
     proc = await asyncio.create_subprocess_exec('ffprobe', '-hide_banner', '-print_format', 'json', '-show_format', '-show_streams', filename, stdout=asyncio.subprocess.PIPE)

@@ -1,105 +1,110 @@
 import os
+import time
+import signal
+import asyncio
+import subprocess
+from pytgcalls import StreamType
 from pyrogram.types import Message
-from pytgcalls import GroupCallFactory
-from pyrogram.utils import MAX_CHANNEL_ID
-from vcbot import instances, UB, queues, to_delete
-from vcbot.helpers.utils import raw_converter, transcode, tg_download, yt_download
-
+from pytgcalls.types import Update
+from pytgcalls.pytgcalls import PyTgCalls
+from vcbot import UB, queues, to_delete, group_calls, ff_sempai
+from vcbot.helpers.utils import transcode, tg_download, yt_download
+from pytgcalls.types.input_stream import (
+    VideoParameters,
+    AudioParameters,
+    InputAudioStream,
+    InputVideoStream
+)
+#
 # base from https://github.com/TeamUltroid/Ultroid/blob/dev/vcbot/__init__.py
 # Thanks to TeamUltroid :)
+
+ms = {}
+now_playing = []
+
+@group_calls.on_stream_end()
+async def on_stream_end(client: PyTgCalls, update: Update):
+    cms = time.time()
+    if k:= ms.get(update.chat_id):
+        if cms-k < 10:
+            return
+    ms[update.chat_id] = cms
+    anything = queues.get(update.chat_id, False)
+    player = Player(update.chat_id)
+    if anything:
+        next = queues.get(update.chat_id)
+        video , is_path, user = next
+        suc, err = await player.play_file(video, is_path, change=True)
+        if not suc:
+            await UB.send_message(update.chat_id, str(err))
+        else:
+            await UB.send_message(update.chat_id, "Now playing: {}\nRequested by: {}".format(video, user.mention(style="md")))
+        return True
+    else:
+        await player.leave_vc()
+
 
 class Player:
     def __init__(self, chat_id):
         self._current_chat = chat_id
-        if instances.get(chat_id):
-            self.group_call = instances[chat_id].get('instance')
-        else:
-            _client = GroupCallFactory(UB, mtproto_backend=GroupCallFactory.MTPROTO_CLIENT_TYPE.PYROGRAM)
-            self.group_call = _client.get_file_group_call()
-            instances[chat_id] = {'instance': self.group_call}
 
-    async def startCall(self):
-        if not self.group_call.is_connected:
-            try:
-                self.group_call.on_network_status_changed(self.on_network_changed)
-                self.group_call.on_playout_ended(self.playout_ended_handler)
-                await self.group_call.start(self._current_chat)
-            except Exception as e:
-                return False, e
-        return True, None
-
-    async def on_network_changed(self, group_call, is_connected):
-        chat_id = MAX_CHANNEL_ID - group_call.full_chat.id
-        if is_connected:
-            instances[self._current_chat]['is_active'] = True
-            await UB.send_message(chat_id, 'Successfully joined!')
-        else:
-            instances[self._current_chat]['is_active'] = True
-            try:
-                os.remove(group_call._GroupCallFile__input_filename)
-            except BaseException:
-                pass
-            await UB.send_message(chat_id, 'Disconnected from voice chat..')
-
-    async def playout_ended_handler(self, call, __):
-        try:
-            for i in to_delete:
-                print(f"Deleting {i}")
-                to_delete.remove(i)
-                os.remove(i)
-            os.remove(call._GroupCallFile__input_filename)
-        except BaseException:
-            pass
-        info = queues.get(self._current_chat)
-        if info:
-            file, is_path, req_user = info
-            await self.play_file(file, is_path)
-            await UB.send_message(
-                self._current_chat,
-                "🎧 **Now playing:**  {}\n👤 **Requested by:** {}".format(
-                    file.video.file_name if is_path else file,  req_user.mention(style='md')
-                ),
-            )
-        else:
-            await self.leave_vc()
-
-    async def play_file(self, file, is_path=False):
-        global to_delete
-        group_call = self.group_call
-        width = None
-        height = None
+    async def play_file(self, file, is_path=False, change=False):
         if not is_path:
-            file, res = await yt_download(file)
-            try:
-                width, height = res
-                print(f"{file} is {width}x{height}")
-            except:
-                ...
+            file, _ = await yt_download(file)
         else:
             file = await tg_download(file)
-        # audio = await transcode(file)
-        audio = file.split('.')[0] + '.raw'
-        
-        # https://t.me/tgcallschat/18596
-        try:
-            os.mkfifo(audio)
-        except FileExistsError:
-            ... # will not happen btw
-        raw_converter(file, audio)
-        to_delete.append(file)
-        if not audio:
-            return False, "Couldn't fetch audio from file!"
-        await group_call.set_video_capture(file, width=width, height=height)
-        group_call.input_filename = audio
+        audio, video = await transcode(file)
+        self.add_to_trash(audio)
+        self.add_to_trash(video)
+        while not os.path.exists(video) and not os.path.exists(audio):
+            await asyncio.sleep(0.1)
+        if change:
+            await group_calls.change_stream(
+                self._current_chat,
+                InputAudioStream(
+                    audio,
+                    AudioParameters(
+                        bitrate=48000
+                    ),
+                ),
+                InputVideoStream(
+                    video,
+                    VideoParameters(
+                        width=640,
+                        height=360,
+                        frame_rate=25,
+                    )
+                )
+            )
+        else:
+            await group_calls.join_group_call(
+                self._current_chat,
+                InputAudioStream(
+                    audio,
+                    AudioParameters(
+                        bitrate=48000,
+                    ),
+                ),
+                InputVideoStream(
+                    video,
+                    VideoParameters(
+                        width=640,
+                        height=360,
+                        frame_rate=25,
+                    ),
+                ),
+                stream_type=StreamType().local_stream,
+            )
+        now_playing.append(self._current_chat)
         return True, None
 
-    async def play_or_queue(self, vid, m: Message, is_path=False):
+    async def play_or_queue(self, vid, m: Message, is_path=False, change=False):
         anything = queues.get(self._current_chat, False)
-        if not anything and not self.group_call.is_connected:
+        if not self._current_chat in now_playing:
             suc, err = await self.play_file(vid, is_path)
             if not suc:
                 await UB.send_message(self._current_chat, str(err))
-            return True     
+            return True
         else:
             data = [vid, is_path, m.from_user]
             pos = queues.add(self._current_chat, data)
@@ -107,22 +112,38 @@ class Player:
             return False
             
     async def leave_vc(self):
-        global to_delete
-        await self.group_call.stop()
-        del instances[self._current_chat]
-        try:
-            for i in to_delete:
-                print(f"Deleting {i}")
-                to_delete.remove(i)
-                os.remove(i)
-        except BaseException:
-            pass
+        await group_calls.leave_group_call(self._current_chat)
+        pid = self.terminate_ffmpeg()
+        status = f"Terminated FFmpeg with PID {pid}" if \
+            pid else ""
+        status += "\nSuccessfully left vc!"
+        now_playing.remove(self._current_chat)
+        self.clear_played()
+        await UB.send_message(self._current_chat, status)
 
-    async def join_vc(self):
-        success, err = await self.startCall()
-        if success:
-            return True
-        await UB.send_message(
-            self._current_chat, f"An error occured\n`{err}`"
-        )
-        return False
+    def terminate_ffmpeg(self):
+        if x:= ff_sempai.get(self._current_chat):
+            try:
+                x.send_signal(signal.SIGINT)
+                x.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                x.kill()
+            return x.pid
+    
+    def clear_played(self):
+        print("Deleting")
+        files = to_delete.get(self._current_chat, [])
+        for i in files:
+            try:
+                os.remove(i)
+                print("Removed {}".format(i))
+            except BaseException:
+                print("Couldn't remove {}".format(i))
+            files.remove(i)
+    
+    def add_to_trash(self, file):
+        if x:= to_delete.get(self._current_chat):
+            if x:
+                to_delete[self._current_chat].append(file)
+            else:
+                to_delete[self._current_chat] = [file]

@@ -1,5 +1,6 @@
 import logging
 import time
+from pytgcalls import PyTgCalls
 from pyrogram import Client
 from vcbot.config import Var
 from vcbot.queue import Queue
@@ -7,17 +8,16 @@ from vcbot.queue import Queue
 StartTime = time.time()
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.WARNING,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
 logging.getLogger("pytgcalls").setLevel(logging.WARNING)
 logging.getLogger("youtube_dl").setLevel(logging.WARNING)
-logging.basicConfig(level=logging.INFO)
 
 instances = dict()
 queues = Queue()
-to_delete = []
+to_delete = dict()
 ff_sempai = dict()
 
 
@@ -36,3 +36,5 @@ UB = Client(
     api_hash=Var.API_HASH,
     workers=8
 )
+
+group_calls = PyTgCalls(UB)
