@@ -63,9 +63,7 @@ async def transcode(file_path: str, delete=True, daemon=False):
     video_f = file_path.split(".")[0] + 'video' + ".raw"
     os.mkfifo(audio_f)
     os.mkfifo(video_f)
-    # if (os.path.isfile(audio_f) and (os.path.isfile(video_f))):
-    #     return audio_f, video_f
-    cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", file_path, "-f", "s16le", "-ac", "1", "-ar", "48000", audio_f, "-f", "rawvideo", '-r', '25', '-pix_fmt', 'yuv420p', '-vf', 'scale=1280:-1', video_f]
+    cmd = ["ffmpeg", "-hide_banner", "-y", "-i", file_path, "-f", "s16le", "-ac", "1", "-ar", "48000", audio_f, "-f", "rawvideo", '-r', '25', '-pix_fmt', 'yuv420p', '-vf', 'scale=1280:-1', video_f]
     if daemon:
         proc = subprocess.Popen(
             cmd,
@@ -80,9 +78,6 @@ async def transcode(file_path: str, delete=True, daemon=False):
             *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
         await proc.communicate()
-    if proc.returncode != 0:
-        print(f"Transcode failed for {file_path}")
-        return None
     if delete:
         try:
             os.remove(file_path)
