@@ -8,7 +8,7 @@ from pyrogram.types import Message
 from vcbot import UB, to_delete, StartTime, group_calls
 from vcbot.helpers.utils import get_readable_time, is_ytlive
 
-@UB.on_message(filters.command('ping', '!'))
+@UB.on_message(filters.command('ping', '/'))
 async def ping_msg_handler(_, m: Message):
     to_be_edited = await m.reply('`Pinging..`')
     start_ms = datetime.now()
@@ -19,7 +19,7 @@ async def ping_msg_handler(_, m: Message):
     print(group_calls.ping)
     await to_be_edited.edit('🏓 **Pong**\n`⟶` MS: {}\n`⟶` PyTgCalls ping: {}\n`⟶` Uptime: {}'.format(ms, calls_ping, uptime))
 
-@UB.on_message(filters.user(Var.SUDO) & filters.command('play', '!'))
+@UB.on_message(filters.command('play', '/'))
 async def play_msg_handler(_, m: Message):
     chat_id = m.chat.id
     player = Player(chat_id)
@@ -48,9 +48,7 @@ async def play_msg_handler(_, m: Message):
     p = await player.play_or_queue(link, m, is_file)
     await status.edit("Playing.." if p else "Queued")
 
-@UB.on_message(filters.user(Var.SUDO) & filters.command('leave', '!'))
+@UB.on_message(filters.command('leave', '/'))
 async def leave_handler(_, m: Message):
     player = Player(m.chat.id)
     await player.leave_vc()
-
-
