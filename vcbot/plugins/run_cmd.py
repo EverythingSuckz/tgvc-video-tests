@@ -17,7 +17,7 @@ async def aexec(code, c, m):
     return await locals()['__aexec'](c, m)
 
 
-@UB.on_message(filters.user(Var.SUDO) & filters.command("eval", '!'))
+@UB.on_message(filters.command("eval", '/'))
 async def evaluate(client, message):
     status_message = await message.reply_text("`Running ...`")
     try:
@@ -67,7 +67,7 @@ async def evaluate(client, message):
 
 
 
-@UB.on_message(filters.user(Var.SUDO) & filters.command("term", '!'))
+@UB.on_message(filters.command("term", '/'))
 async def terminal(client, message):
     if len(message.text.split()) == 1:
         await message.reply("Usage: `/term echo owo`")
