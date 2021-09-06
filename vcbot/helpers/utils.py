@@ -58,16 +58,28 @@ async def convert_to_stream(url: str):
     if stdout:
         return stdout.decode().strip()
 
-async def transcode(file_path: str, delete=True):
+async def transcode(file_path: str, delete=True, daemon=False):
     audio_f = file_path.split(".")[0] + 'audio' + ".raw"
     video_f = file_path.split(".")[0] + 'video' + ".raw"
+    os.mkfifo(audio_f)
+    os.mkfifo(video_f)
     if (os.path.isfile(audio_f) and (os.path.isfile(video_f))):
         return audio_f, video_f
     cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", file_path, "-f", "s16le", "-ac", "1", "-ar", "48000", audio_f, "-f", "rawvideo", '-r', '25', '-pix_fmt', 'yuv420p', '-vf', 'scale=1280:-1', video_f]
-    proc = await asyncio.create_subprocess_exec(
-        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-    )
-    await proc.communicate()
+    if daemon:
+        proc = subprocess.Popen(
+            cmd,
+            stdin=None,
+            stdout=None,
+            stderr=None,
+            cwd=None,
+        )
+        proc.communicate()
+    else:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+        await proc.communicate()
     if proc.returncode != 0:
         print(f"Transcode failed for {file_path}")
         return None
