@@ -64,7 +64,7 @@ class Player:
             await self.join_play(video, audio)
         return True, None
 
-    async def join_play(self, video, audio, width=1280, height=720, fps=25, bitrate=48000):
+    async def join_play(self, video, audio, width=1280, height=720, fps=20, bitrate=48000):
         await group_calls.join_group_call(
             self._current_chat,
             InputAudioStream(

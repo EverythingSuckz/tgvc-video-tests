@@ -1,9 +1,19 @@
 import os
 import json
+import random
+import string
 import asyncio
 import subprocess
 from youtube_dl import YoutubeDL
 from pyrogram.types import Message
+
+def generate_hash(N=7):
+    return ''.join(
+        random.choices(
+            string.ascii_uppercase +
+            string.digits, k = N
+        )
+    )
 
 def get_readable_time(seconds: int) -> str:
     count = 0
@@ -59,11 +69,12 @@ async def convert_to_stream(url: str):
         return stdout.decode().strip()
 
 async def transcode(file_path: str, delete=True, daemon=False):
-    audio_f = file_path.split(".")[0] + 'audio' + ".raw"
-    video_f = file_path.split(".")[0] + 'video' + ".raw"
+    print(file_path)
+    audio_f = generate_hash(5) + 'audio' + ".raw"
+    video_f = generate_hash(5) + 'video' + ".raw"
     os.mkfifo(audio_f)
     os.mkfifo(video_f)
-    cmd = ["ffmpeg", "-hide_banner", "-y", "-i", file_path, "-f", "s16le", "-ac", "1", "-ar", "48000", audio_f, "-f", "rawvideo", '-r', '25', '-pix_fmt', 'yuv420p', '-vf', 'scale=1280:-1', video_f]
+    cmd = ["ffmpeg", "-hide_banner", "-y", "-i", file_path, "-f", "s16le", "-ac", "1", "-ar", "48000", audio_f, "-f", "rawvideo", '-r', '20', '-pix_fmt', 'yuv420p', '-vf', 'scale=1280:-1', video_f]
     if daemon:
         proc = subprocess.Popen(
             cmd,
