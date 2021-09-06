@@ -2,7 +2,7 @@ import os
 import json
 import asyncio
 import subprocess
-from youtube_dl import YoutubeDL
+from yt_dlp import YoutubeDL
 from pyrogram.types import Message
 
 def get_readable_time(seconds: int) -> str:
