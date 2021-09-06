@@ -70,8 +70,8 @@ class Player:
                 InputVideoStream(
                     video,
                     VideoParameters(
-                        width=640,
-                        height=360,
+                        width=1280,
+                        height=720,
                         frame_rate=25,
                     )
                 )
@@ -88,8 +88,8 @@ class Player:
                 InputVideoStream(
                     video,
                     VideoParameters(
-                        width=640,
-                        height=360,
+                        width=1280,
+                        height=720,
                         frame_rate=25,
                     ),
                 ),
