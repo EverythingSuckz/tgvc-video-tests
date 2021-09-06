@@ -53,11 +53,13 @@ class Player:
             file, _ = await yt_download(file)
         else:
             file = await tg_download(file)
-        audio, video, _ = await transcode(file)
-        self.add_to_trash(audio)
-        self.add_to_trash(video)
-        while not os.path.exists(video) and not os.path.exists(audio):
-            await asyncio.sleep(0.1)
+        audio, video, proc = await transcode(file, daemon=True)
+        self.add_to_trash(file)
+        ff_sempai[self._current_chat] = proc
+        # self.add_to_trash(audio)
+        # self.add_to_trash(video)
+        # while not os.path.exists(video) and not os.path.exists(audio):
+        #     await asyncio.sleep(0.1)
         if change:
             await self.change_source(video, audio)
         else:
@@ -85,7 +87,7 @@ class Player:
         )
         now_playing.append(self._current_chat)
 
-    async def change_source(self, video, audio, width=1280, height=720, fps=25, bitrate=48000):
+    async def change_source(self, video, audio, width=1280, height=720, fps=20, bitrate=48000):
         await group_calls.change_stream(
             self._current_chat,
             InputAudioStream(
