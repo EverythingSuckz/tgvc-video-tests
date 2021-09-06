@@ -21,7 +21,7 @@ from pytgcalls.types.input_stream import (
 
 
 
-@UB.on_message(filters.user(Var.SUDO) & filters.command('stream', '!'))
+@UB.on_message(filters.command('stream', '/'))
 async def stream_msg_handler(_, m: Message):
     status = "Processing.."
     msg = await m.reply(status)
@@ -64,7 +64,7 @@ async def stream_msg_handler(_, m: Message):
 
 
 
-@UB.on_message(filters.user(Var.SUDO) & filters.command('stop', '!'))
+@UB.on_message(filters.command('stop', '/'))
 async def stop_stream_msg_handler(_, m: Message):
     player = Player(m.chat.id)
     try:
