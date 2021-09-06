@@ -53,7 +53,7 @@ class Player:
             file, _ = await yt_download(file)
         else:
             file = await tg_download(file)
-        audio, video = await transcode(file)
+        audio, video, _ = await transcode(file)
         self.add_to_trash(audio)
         self.add_to_trash(video)
         while not os.path.exists(video) and not os.path.exists(audio):

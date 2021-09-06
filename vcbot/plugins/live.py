@@ -10,7 +10,7 @@ from pyrogram import filters
 from vcbot.player import Player
 from pyrogram.types import Message
 from vcbot import UB, to_delete, ff_sempai, group_calls
-from vcbot.helpers.utils import convert_to_stream, raw_converter, is_ytlive
+from vcbot.helpers.utils import convert_to_stream, raw_converter, is_ytlive, transcode
 from pytgcalls import StreamType
 from pytgcalls.types.input_stream import (
     VideoParameters,
@@ -34,15 +34,9 @@ async def stream_msg_handler(_, m: Message):
             stream_url = await convert_to_stream(link)
     except IndexError:
         ...
-    vid = f"vid{m.chat.id}.raw"
-    audio = f"audio{m.chat.id}.raw"
     player = Player(m.chat.id)
-    player.add_to_trash(vid)
-    player.add_to_trash(audio)
-    proc = raw_converter(stream_url, vid, audio)
+    audio, video, proc = await transcode(stream_url, daemon=True)
     ff_sempai[m.chat.id] = proc
-    while not os.path.exists(vid) and not os.path.exists(audio):
-        await asyncio.sleep(0.125)
     await group_calls.join_group_call(
         m.chat.id,
         InputAudioStream(
@@ -52,11 +46,11 @@ async def stream_msg_handler(_, m: Message):
             ),
         ),
         InputVideoStream(
-            vid,
+            video,
             VideoParameters(
                 width=1280,
                 height=720,
-                frame_rate=25,
+                frame_rate=20,
             ),
         ),
         stream_type=StreamType().local_stream,
@@ -71,7 +65,6 @@ async def stop_stream_msg_handler(_, m: Message):
         instance = group_calls.get_active_call(m.chat.id)
     except GroupCallNotFound:
         instance = None
-    print(instance)
     if instance:
         await player.leave_vc()
     else:

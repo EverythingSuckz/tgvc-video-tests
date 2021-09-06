@@ -94,7 +94,7 @@ async def transcode(file_path: str, delete=True, daemon=False):
             os.remove(file_path)
         except BaseException:
             ...
-    return audio_f, video_f
+    return audio_f, video_f, proc
 
 async def get_video_info(filename):
     proc = await asyncio.create_subprocess_exec('ffprobe', '-hide_banner', '-print_format', 'json', '-show_format', '-show_streams', filename, stdout=asyncio.subprocess.PIPE)
