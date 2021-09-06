@@ -59,45 +59,53 @@ class Player:
         while not os.path.exists(video) and not os.path.exists(audio):
             await asyncio.sleep(0.1)
         if change:
-            await group_calls.change_stream(
-                self._current_chat,
-                InputAudioStream(
-                    audio,
-                    AudioParameters(
-                        bitrate=48000
-                    ),
-                ),
-                InputVideoStream(
-                    video,
-                    VideoParameters(
-                        width=640,
-                        height=360,
-                        frame_rate=25,
-                    )
-                )
-            )
+            await self.change_source(video, audio)
         else:
-            await group_calls.join_group_call(
-                self._current_chat,
-                InputAudioStream(
-                    audio,
-                    AudioParameters(
-                        bitrate=48000,
-                    ),
-                ),
-                InputVideoStream(
-                    video,
-                    VideoParameters(
-                        width=640,
-                        height=360,
-                        frame_rate=25,
-                    ),
-                ),
-                stream_type=StreamType().local_stream,
-            )
-        now_playing.append(self._current_chat)
+            await self.join_play(video, audio)
         return True, None
 
+    async def join_play(self, video, audio, width=1280, height=720, fps=25, bitrate=48000):
+        await group_calls.join_group_call(
+            self._current_chat,
+            InputAudioStream(
+                audio,
+                AudioParameters(
+                    bitrate=bitrate,
+                ),
+            ),
+            InputVideoStream(
+                video,
+                VideoParameters(
+                    width=width,
+                    height=height,
+                    frame_rate=fps,
+                ),
+            ),
+            stream_type=StreamType().local_stream,
+        )
+        now_playing.append(self._current_chat)
+
+    async def change_source(self, video, audio, width=1280, height=720, fps=25, bitrate=48000):
+        await group_calls.change_stream(
+            self._current_chat,
+            InputAudioStream(
+                audio,
+                AudioParameters(
+                    bitrate=48000
+                ),
+            ),
+            InputVideoStream(
+                video,
+                VideoParameters(
+                    width=1280,
+                    height=720,
+                    frame_rate=25,
+                )
+            )
+        )
+        if not self._current_chat in now_playing:
+            now_playing.append(self._current_chat)
+    
     async def play_or_queue(self, vid, m: Message, is_path=False, change=False):
         anything = queues.get(self._current_chat, False)
         if not self._current_chat in now_playing:
@@ -113,21 +121,20 @@ class Player:
             
     async def leave_vc(self):
         await group_calls.leave_group_call(self._current_chat)
-        pid = self.terminate_ffmpeg()
-        status = f"Terminated FFmpeg with PID {pid}" if \
+        pid = await self.terminate_ffmpeg()
+        status = f"Terminated FFmpeg with PID `{pid}`" if \
             pid else ""
         status += "\nSuccessfully left vc!"
         now_playing.remove(self._current_chat)
         self.clear_played()
         await UB.send_message(self._current_chat, status)
 
-    def terminate_ffmpeg(self):
+    async def terminate_ffmpeg(self):
         if x:= ff_sempai.get(self._current_chat):
             try:
-                x.send_signal(signal.SIGINT)
-                x.wait(timeout=3)
-            except subprocess.TimeoutExpired:
-                x.kill()
+                x.terminate()
+            except (RuntimeError or RuntimeWarning):
+                await x.terminate()
             return x.pid
     
     def clear_played(self):
@@ -143,7 +150,10 @@ class Player:
     
     def add_to_trash(self, file):
         if x:= to_delete.get(self._current_chat):
-            if x:
-                to_delete[self._current_chat].append(file)
-            else:
-                to_delete[self._current_chat] = [file]
+            try:
+                if x:
+                    to_delete[self._current_chat].append(file)
+                else:
+                    to_delete[self._current_chat] = [file]
+            except (IndexError or AttributeError):
+                pass
