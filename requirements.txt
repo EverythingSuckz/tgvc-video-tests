@@ -1,6 +1,6 @@
 ffmpeg-python
 youtube_dl
-py-tgcalls==0.8.0b10
+py-tgcalls==0.8.0b11
 git+https://github.com/pyrogram/pyrogram@master
 python-dotenv
 tgcrypto
