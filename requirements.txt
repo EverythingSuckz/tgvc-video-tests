@@ -1,5 +1,5 @@
 ffmpeg-python
-youtube_dl
+git+https://github.com/yt-dlp/yt-dlp
 py-tgcalls==0.8.0b10
 git+https://github.com/pyrogram/pyrogram@master
 python-dotenv
