@@ -12,4 +12,4 @@ class Var(object):
     FPS = int(getenv('FPS', 20))
     WIDTH = int(getenv('WIDTH', 854))
     HEIGHT = int(getenv('HEIGHT', 480))
-    BITRATE = int(getenv('BITRATE', 58000))
+    BITRATE = int(getenv('BITRATE', 48000))
