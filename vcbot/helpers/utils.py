@@ -40,7 +40,7 @@ def get_readable_time(seconds: int) -> str:
 
 def raw_converter(source, vid, audio, log_file='ffmpeg.log'):
     # log_file = open(log_file, 'w')
-    cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", source, "-f", "s16le", "-ac", "1", "-ar", "48000", audio, "-f", "rawvideo", '-r', '25', '-pix_fmt', 'yuv420p', '-vf', 'scale=1280:-1', vid]
+    cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", source, "-f", "s16le", "-ac", "1", "-ar", "58000", audio, "-f", "rawvideo", '-r', '20', '-pix_fmt', 'yuv420p', '-vf', 'scale=1280:-1', vid]
     return subprocess.Popen(
         cmd,
         stdin=None,
@@ -72,23 +72,21 @@ async def transcode(file_path: str, delete=True, daemon=False):
     print(file_path)
     audio_f = generate_hash(5) + 'audio' + ".raw"
     video_f = generate_hash(5) + 'video' + ".raw"
-    os.mkfifo(audio_f)
-    os.mkfifo(video_f)
-    cmd = ["ffmpeg", "-hide_banner", "-y", "-i", file_path, "-f", "s16le", "-ac", "1", "-ar", "48000", audio_f, "-f", "rawvideo", '-r', '20', '-pix_fmt', 'yuv420p', '-vf', 'scale=1280:-1', video_f]
-    if daemon:
-        proc = subprocess.Popen(
-            cmd,
-            stdin=None,
-            stdout=None,
-            stderr=None,
-            cwd=None,
-        )
-        proc.communicate()
-    else:
-        proc = await asyncio.create_subprocess_exec(
-            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-        )
-        await proc.communicate()
+    cmd = ["ffmpeg", "-hide_banner", "-y", "-i", file_path, "-f", "s16le", "-ac", "1", "-ar", "58000", audio_f, "-f", "rawvideo", '-r', '20', '-pix_fmt', 'yuv420p', '-vf', 'scale=1280:-1', video_f]
+    # if daemon:
+    #     proc = subprocess.Popen(
+    #         cmd,
+    #         stdin=None,
+    #         stdout=None,
+    #         stderr=None,
+    #         cwd=None,
+    #     )
+    #     proc.communicate()
+    # else:
+    proc = await asyncio.create_subprocess_exec(
+        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    )
+    await proc.communicate()
     if delete:
         try:
             os.remove(file_path)

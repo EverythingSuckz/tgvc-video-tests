@@ -16,7 +16,7 @@ async def ping_msg_handler(_, m: Message):
     end = datetime.now()
     ms = (end - start_ms).microseconds / 1000
     calls_ping = await group_calls.ping
-    await to_be_edited.edit('🏓 **Pong**\n`⟶` MS: {}\n`⟶` PyTgCalls ping: {}\n`⟶` Uptime: {}'.format(ms, calls_ping, uptime))
+    await to_be_edited.edit('🏓 **Pong**\n`⟶` ms: `{}`\n`⟶` PyTgCalls ping: `{}`\n`⟶` Uptime: {}'.format(ms, round(calls_ping, 2), uptime))
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('play', '!'))
 async def play_msg_handler(_, m: Message):
