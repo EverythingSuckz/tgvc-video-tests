@@ -4,6 +4,7 @@ import random
 import string
 import asyncio
 import subprocess
+from vcbot.config import Var
 from youtube_dl import YoutubeDL
 from pyrogram.types import Message
 
@@ -141,7 +142,9 @@ def get_resolution(info_dict):
 
 async def yt_download(ytlink):
     ydl_opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]',
+        'format': f'bestvideo[height<={Var.HEIGHT}]+bestaudio[ext=mp3]/best[ext=mp3]',
+        "geo-bypass": True,
+        "nocheckcertificate": True,
         'outtmpl': '%(title)s - %(extractor)s-%(id)s.%(ext)s',
         'writethumbnail': False
     }
