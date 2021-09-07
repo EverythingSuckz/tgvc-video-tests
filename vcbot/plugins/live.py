@@ -1,3 +1,4 @@
+import logging
 import re
 import os
 import signal
@@ -9,8 +10,8 @@ from vcbot.config import Var
 from pyrogram import filters
 from vcbot.player import Player
 from pyrogram.types import Message
-from vcbot import UB, to_delete, ff_sempai, group_calls
-from vcbot.helpers.utils import convert_to_stream, raw_converter, is_ytlive, transcode
+from vcbot import UB, group_calls
+from vcbot.helpers.utils import convert_to_stream, is_ytlive, yt_download
 from pytgcalls import StreamType
 from pytgcalls.types.input_stream import (
     VideoParameters,
@@ -25,47 +26,40 @@ from pytgcalls.types.input_stream import (
 async def stream_msg_handler(_, m: Message):
     status = "Processing.."
     msg = await m.reply(status)
+    player = Player(m.chat.id)
     stream_url = "https://feed.play.mv/live/10005200/7EsSDh7aX6/master.m3u8"
+    player.meta["is_live"] = True
     try:
         stream_url = m.text.split(' ', 1)[1]
         link = re.search(r'((https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11}))', stream_url)
         if link:
             link = link.group(1)
-            stream_url = await convert_to_stream(link)
+            if (await is_ytlive(stream_url)):
+                stream_url = await convert_to_stream(link)
+            else:
+                player.meta["is_live"] = False
+                stream_url, _ = await yt_download(link)
+                player.add_to_trash(stream_url)
     except IndexError:
         ...
-    player = Player(m.chat.id)
-    audio, video, proc = await transcode(stream_url, daemon=True)
-    ff_sempai[m.chat.id] = proc
+    audio, video = await player.convert(stream_url, daemon=True, delete=False)
+    player.meta["is_playing"] = True
     await group_calls.join_group_call(
         m.chat.id,
         InputAudioStream(
             audio,
             AudioParameters(
-                bitrate=48000,
+                bitrate=Var.BITRATE,
             ),
         ),
         InputVideoStream(
             video,
             VideoParameters(
-                width=1280,
-                height=720,
-                frame_rate=20,
+                width=Var.WIDTH,
+                height=Var.HEIGHT,
+                frame_rate=Var.FPS,
             ),
         ),
-        stream_type=StreamType().local_stream,
+        stream_type=StreamType().pulse_stream,
     )
 
-
-
-@UB.on_message(filters.user(Var.SUDO) & filters.command('stop', '!'))
-async def stop_stream_msg_handler(_, m: Message):
-    player = Player(m.chat.id)
-    try:
-        instance = group_calls.get_active_call(m.chat.id)
-    except GroupCallNotFound:
-        instance = None
-    if instance:
-        await player.leave_vc()
-    else:
-        await m.reply("No streams going on vc")

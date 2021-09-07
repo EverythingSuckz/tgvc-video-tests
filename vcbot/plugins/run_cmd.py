@@ -5,7 +5,7 @@ import os
 import re
 import subprocess
 from io import StringIO, BytesIO
-from vcbot import UB, Var
+from vcbot import UB, Var, logging
 
 p = print
 
@@ -86,7 +86,7 @@ async def terminal(client, message):
                     stderr=subprocess.PIPE
                 )
             except Exception as err:
-                print(err)
+                logging.warning(err)
                 await message.reply("""
 **Error:**
 ```{}```
