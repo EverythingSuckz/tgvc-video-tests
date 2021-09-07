@@ -142,7 +142,7 @@ def get_resolution(info_dict):
 
 async def yt_download(ytlink):
     ydl_opts = {
-        'format': f'bestvideo[height<={Var.HEIGHT}]+bestaudio[ext=mp3]/best[ext=mp3]',
+        'format': f'bestvideo[height<={Var.HEIGHT},ext=mp4]+bestaudio[ext=m4a]',
         "geo-bypass": True,
         "nocheckcertificate": True,
         'outtmpl': '%(title)s - %(extractor)s-%(id)s.%(ext)s',
