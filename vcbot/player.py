@@ -83,7 +83,7 @@ class Player:
                     frame_rate=fps,
                 ),
             ),
-            stream_type=StreamType().pulse_stream,
+            stream_type=StreamType().local_stream,
         )
         now_playing.append(self._current_chat)
 
@@ -99,9 +99,9 @@ class Player:
             InputVideoStream(
                 video,
                 VideoParameters(
-                    width=height,
-                    height=width,
-                    frame_rate=fps,
+                    width=1280,
+                    height=720,
+                    frame_rate=25,
                 )
             )
         )

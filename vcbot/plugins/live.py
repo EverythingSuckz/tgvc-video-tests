@@ -53,7 +53,7 @@ async def stream_msg_handler(_, m: Message):
                 frame_rate=20,
             ),
         ),
-        stream_type=StreamType().pulse_stream,
+        stream_type=StreamType().local_stream,
     )
 
 
