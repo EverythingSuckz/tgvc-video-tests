@@ -154,7 +154,7 @@ async def yt_download(ytlink):
         'outtmpl': '%(title)s - %(extractor)s-%(id)s.%(ext)s',
         'noplaylist': True,
         'progress_hooks': [the_hook],
-        'logger': LOG,
+        # 'logger': LOG,
         'prefer_ffmpeg': True,
     }
     with YoutubeDL(ydl_opts) as ydl:
