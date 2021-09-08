@@ -29,6 +29,10 @@ async def play_msg_handler(_, m: Message):
         if m.reply_to_message.video:
             is_file = True
             link = m.reply_to_message
+        elif m.reply_to_message.text:
+            if match := re.search(r'((https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11}))', m.reply_to_message.text):
+                is_file = False
+                link = match.group(1)
         # todo
     if is_live:
         return await m.reply("**Error**: This is a live link.\nTip: use !stream command.")

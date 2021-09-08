@@ -5,6 +5,7 @@ import string
 import asyncio
 import subprocess
 from vcbot.config import Var
+from vcbot import LOG
 from youtube_dl import YoutubeDL
 from pyrogram.types import Message
 
@@ -140,13 +141,21 @@ def get_resolution(info_dict):
         return None
     return (width, height)
 
+def the_hook(meta):
+    if meta['status'] == 'finished':
+        LOG.info('Done downloading, now converting ...')
+    
+
 async def yt_download(ytlink):
     ydl_opts = {
         'format': f'bestvideo[height<={Var.HEIGHT},ext=mp4]+bestaudio[ext=m4a]',
         "geo-bypass": True,
         "nocheckcertificate": True,
         'outtmpl': '%(title)s - %(extractor)s-%(id)s.%(ext)s',
-        'writethumbnail': False
+        'noplaylist': True,
+        'progress_hooks': [the_hook],
+        'logger': LOG,
+        'prefer_ffmpeg': True,
     }
     with YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(ytlink, download=False)

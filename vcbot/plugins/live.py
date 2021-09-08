@@ -1,7 +1,5 @@
-import logging
 import re
 import os
-import signal
 import asyncio
 import traceback
 from asyncio import sleep
@@ -37,7 +35,7 @@ async def stream_msg_handler(_, m: Message):
             if (await is_ytlive(stream_url)):
                 stream_url = await convert_to_stream(link)
             else:
-                player.meta["is_live"] = False
+                # player.meta["is_live"] = False
                 stream_url, _ = await yt_download(link)
                 player.add_to_trash(stream_url)
     except IndexError:
@@ -50,6 +48,8 @@ async def stream_msg_handler(_, m: Message):
                                         audio_file=audio,
                                         video_file=video)
     player.meta["is_playing"] = True
+    while not os.path.exists(audio) and not os.path.exists(video):
+        await asyncio.sleep(0.5)
     await group_calls.join_group_call(
         m.chat.id,
         InputAudioStream(
@@ -66,6 +66,6 @@ async def stream_msg_handler(_, m: Message):
                 frame_rate=Var.FPS,
             ),
         ),
-        stream_type=StreamType().live_stream,
+        stream_type=StreamType().pulse_stream,
     )
 

@@ -8,7 +8,7 @@ from pytgcalls import StreamType
 from pyrogram.types import Message
 from pytgcalls.types import Update
 from pytgcalls.pytgcalls import PyTgCalls
-from vcbot import UB, queues, group_calls, logging
+from vcbot import UB, queues, group_calls, LOG
 from vcbot.helpers.utils import generate_hash, tg_download, yt_download
 from pytgcalls.types.input_stream import (
     VideoParameters,
@@ -24,11 +24,11 @@ ms = {}
 
 @group_calls.on_stream_end()
 async def on_stream_end(client: PyTgCalls, update: Update):
-    logging.info(f"called ended stream")
+    LOG.info(f"called ended stream")
     cms = time.time()
     if k:= ms.get(update.chat_id):
         if cms-k < 10:
-            logging.info(cms-k)
+            LOG.info(cms-k)
             return
     ms[update.chat_id] = cms
     anything = queues.get(update.chat_id, False)
@@ -192,14 +192,14 @@ class Player:
                 return await x.pid
     
     def clear_played(self):
-        logging.info("Deleting additional files")
+        LOG.info("Deleting additional files")
         files = self.to_delete
         for i in files:
             try:
                 os.remove(i)
-                logging.info("Removed {}".format(i))
+                LOG.info("Removed {}".format(i))
             except BaseException:
-                logging.info("Couldn't remove {}".format(i))
+                LOG.info("Couldn't remove {}".format(i))
             self.meta["to_delete"].remove(i)
     
     def add_to_trash(self, file):
