@@ -42,7 +42,13 @@ async def stream_msg_handler(_, m: Message):
                 player.add_to_trash(stream_url)
     except IndexError:
         ...
-    audio, video = await player.convert(stream_url, daemon=True, delete=False)
+    audio = f"audio{m.chat.id}.raw"
+    video = f"video{m.chat.id}.raw"
+    audio, video = await player.convert(stream_url,
+                                        daemon=True,
+                                        delete=False,
+                                        audio_file=audio,
+                                        video_file=video)
     player.meta["is_playing"] = True
     await group_calls.join_group_call(
         m.chat.id,
@@ -60,6 +66,6 @@ async def stream_msg_handler(_, m: Message):
                 frame_rate=Var.FPS,
             ),
         ),
-        stream_type=StreamType().pulse_stream,
+        stream_type=StreamType().live_stream,
     )
 
