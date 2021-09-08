@@ -96,17 +96,13 @@ class Player:
         if not video_file:
             video_file = generate_hash(5) + 'video' + ".raw"
         cmd = ["ffmpeg", "-y", "-i", file_path, "-f", "s16le", "-ac", "1", "-ar", str(Var.BITRATE), audio_file, "-f", "rawvideo", '-r', str(Var.FPS), '-pix_fmt', 'yuv420p', '-vf', f'scale={Var.WIDTH}:-1', "-preset", "ultrafast", video_file]
-        proc = subprocess.Popen(
-            cmd,
-            stdin=None,
-            stdout=self.ffmpeg_log,
-            stderr=subprocess.STDOUT,
-            cwd=None,
+        proc = await asyncio.create_subprocess_exec(
+            *cmd, stdout=self.ffmpeg_log, stderr=asyncio.subprocess.STDOUT
         )
         if daemon:
             self.meta['ffmpeg_process'] = proc
         else:
-            proc.communicate()
+            await proc.communicate()
             self.ffmpeg_log.close()
         if delete:
             try:
