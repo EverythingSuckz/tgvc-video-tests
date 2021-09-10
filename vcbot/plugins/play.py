@@ -39,7 +39,7 @@ async def play_msg_handler(_, m: Message):
     if player.is_live:
         return await m.reply("**Error**: A Live stream is already going on this chat.\nPlease `!leave` and play the file again.")
     status = await m.reply("Downloading...")
-    p = await player.play_or_queue(link, m, is_file)
+    p = await player.play_or_queue(link, status, is_file)
     await status.edit("Playing.." if p else "Queued")
 
 @UB.on_message(filters.user(Var.SUDO) & filters.command('leave', '!'))

@@ -9,7 +9,7 @@ from pyrogram import filters
 from vcbot.player import Player
 from pyrogram.types import Message
 from vcbot import UB, group_calls
-from vcbot.helpers.utils import convert_to_stream, is_ytlive, yt_download
+from vcbot.helpers.utils import convert_to_stream, is_ytlive
 from pytgcalls import StreamType
 from pytgcalls.types.input_stream import (
     VideoParameters,
@@ -36,13 +36,14 @@ async def stream_msg_handler(_, m: Message):
                 stream_url = await convert_to_stream(link)
             else:
                 # player.meta["is_live"] = False
-                stream_url, _ = await yt_download(link)
+                stream_url, _ = await player.yt_download(link, status)
                 player.add_to_trash(stream_url)
     except IndexError:
         ...
     audio = f"audio{m.chat.id}.raw"
     video = f"video{m.chat.id}.raw"
     audio, video = await player.convert(stream_url,
+                                        status,
                                         daemon=True,
                                         delete=False,
                                         audio_file=audio,
@@ -50,6 +51,7 @@ async def stream_msg_handler(_, m: Message):
     player.meta["is_playing"] = True
     while not os.path.exists(audio) and not os.path.exists(video):
         await asyncio.sleep(0.5)
+    await asyncio.sleep(2)
     await group_calls.join_group_call(
         m.chat.id,
         InputAudioStream(

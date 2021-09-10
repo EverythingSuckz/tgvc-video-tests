@@ -9,6 +9,9 @@ from vcbot import LOG
 from youtube_dl import YoutubeDL
 from pyrogram.types import Message
 
+# All the useful snippets here
+# Enjoy
+
 def generate_hash(N=7):
     return ''.join(
         random.choices(
@@ -100,6 +103,25 @@ async def get_video_info(filename):
     stdout, _ = await proc.communicate()
     return json.loads(stdout)
 
+async def get_duration(video):
+    metadata = await get_video_info(video)
+    metainfo = metadata['format']
+    return round(float(metainfo['duration']))
+
+def ms_format(milliseconds: int) -> str:
+    """Inputs time in milliseconds, to get beautified time,
+    as string"""
+    seconds, milliseconds = divmod(int(milliseconds), 1000)
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    tmp = ((str(days) + f" Day{'s' if days > 1 else ''}, ") if days else "") + \
+        ((str(hours) + f" Hour{'s' if hours > 1 else ''}, ") if hours else "") + \
+        ((str(minutes) + f" Minute{'s' if minutes > 1 else ''}, ") if minutes else "") + \
+        ((str(seconds) + f" Second{'s' if seconds > 1 else ''}, ") if seconds else "") + \
+        ((str(milliseconds) + " ms, ") if milliseconds else "")
+    return tmp[:-2]
+
 async def get_backdrop_res(url):
     info = await get_video_info(url)
     width = None
@@ -144,27 +166,21 @@ def get_resolution(info_dict):
 def the_hook(meta):
     if meta['status'] == 'finished':
         LOG.info('Done downloading, now converting ...')
-    
+ 
+async def get_filename(ytlink):
+    cmd = ["youtube-dl",
+        "--geo-bypass",
+        "--no-playlist ",
+        "--no-check-certificate",
+        "--get-filename",
+        "-o",
+        "%(title)s.%(ext)s",
+        ytlink,
+    ]
+    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.STDOUT, stderr=asyncio.subprocess.STDOUT)
+    file_name, _ =  await proc.communicate()
+    return file_name.decode().strip()
 
-async def yt_download(ytlink):
-    ydl_opts = {
-        'format': f'bestvideo[height<={Var.HEIGHT},ext=mp4]+bestaudio[ext=m4a]',
-        "geo-bypass": True,
-        "nocheckcertificate": True,
-        'outtmpl': '%(title)s - %(extractor)s-%(id)s.%(ext)s',
-        'noplaylist': True,
-        'progress_hooks': [the_hook],
-        # 'logger': LOG,
-        'prefer_ffmpeg': True,
-    }
-    with YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(ytlink, download=False)
-        res = get_resolution(info_dict)
-        if not res:
-            res = await get_backdrop_res(ytlink)
-        ydl.process_info(info_dict)
-        _file = ydl.prepare_filename(info_dict)
-        return _file, res
 
 async def tg_download(m: Message):
     path = await m.download()
