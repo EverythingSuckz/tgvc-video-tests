@@ -36,7 +36,7 @@ async def on_stream_end(client: PyTgCalls, update: Update):
     player = Player(update.chat_id)
     if player.is_live:
         return
-    if player.ffmpeg_process:
+    if player.current_process:
         pass
     if anything:
         player.clear_played()
@@ -64,12 +64,12 @@ class Player:
             meta[chat_id] = {}
         if meta[chat_id] == {}:
             self.is_live = False
-            self.ffmpeg_process = None
+            self.current_process = None
             self.is_playing = False
             self.to_delete = dict()
         else:
             self.is_live = meta[chat_id].get('is_live')
-            self.ffmpeg_process = meta[chat_id].get('ffmpeg_process')
+            self.current_process = meta[chat_id].get('current_process')
             self.is_playing = meta[chat_id].get('is_playing')
             self.to_delete = meta[chat_id].get('to_delete', {})
         self.meta = meta[chat_id]
@@ -108,6 +108,7 @@ class Player:
             "%(title)s.%(ext)s"
         ]
         proc = await asyncio.create_subprocess_exec(*cmd, stdout=self._progress_file, stderr=asyncio.subprocess.PIPE)
+        self.meta["current_process"] = proc
         last_percentage = None
         file_name = None
         while True:
@@ -133,6 +134,7 @@ class Player:
                     continue
         await proc.communicate()
         self._progress_file.close()
+        self.meta["current_process"] = None
         if os.path.exists(file_name):
             return file_name
 
@@ -152,7 +154,7 @@ class Player:
             *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
         if daemon:
-            self.meta['ffmpeg_process'] = proc
+            self.meta['current_process'] = proc
         else:
             last_percentage = None
             duration = await get_duration(file_path)
@@ -255,17 +257,18 @@ class Player:
         if self.is_playing:
             self.meta["is_playing"] = False
         self.meta["is_live"] = False
-        self.meta["ffmpeg_process"] = None
         self.clear_played()
         self.meta["is_playing"] = False
         await UB.send_message(self._current_chat, status)
 
     async def terminate_ffmpeg(self):
-        if x:= self.ffmpeg_process:
+        if x:= self.current_process:
             try:
+                self.meta["current_process"] = None
                 x.terminate()
                 return x.pid
             except (RuntimeError or RuntimeWarning):
+                self.meta["current_process"] = None
                 await x.terminate()
                 return await x.pid
     

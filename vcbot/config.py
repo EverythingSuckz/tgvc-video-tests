@@ -10,6 +10,6 @@ class Var(object):
     SESSION = str(getenv('SESSION'))
     SUDO =  list(int(x) for x in getenv('SUDO', '').split())
     FPS = int(getenv('FPS', 20))
-    WIDTH = int(getenv('WIDTH', 1280))
-    HEIGHT = int(getenv('HEIGHT', 720))
+    WIDTH = int(getenv('WIDTH', 854))
+    HEIGHT = int(getenv('HEIGHT', 480))
     BITRATE = int(getenv('BITRATE', 48000))
